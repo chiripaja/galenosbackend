@@ -7,30 +7,36 @@ const enviosdiabetes = require('../modelo/enviosdiabetes');
 
 const findApiDiabetesFecha=async(req, res=response)=>{    
     try {
-        const data = await SIGHBD.query(`select top 20 a.IdAtencion,'00048' as eess, p.NroHistoriaClinica as histcli,
-        p.ApellidoPaterno as apepat, p.ApellidoMaterno as apemat, 
-        CONCAT(p.PrimerNombre, ' ', p.SegundoNombre) AS nombres,
-        CAST(p.IdTipoSexo AS VARCHAR) as sexo,FORMAT(p.FechaNacimiento, 'yyyy-MM-dd') as fecha_nac,
-        CAST(a.Edad AS VARCHAR) as edad, '7'  as instruccion,
-        CAST(p.IdDocIdentidad AS varchar) as tipodoc,p.NroDocumento as dni,
-        CAST (p.IdDistritoDomicilio AS varchar) as ubigeo_res,
-        p.DireccionDomicilio as direccion, p.Telefono as celular,
+        const data = await SIGHBD.query(`select a.IdAtencion,'00000754' as eess, p.NroHistoriaClinica as histcli, p.ApellidoPaterno as apepat, 
+        p.ApellidoMaterno as apemat, CONCAT(p.PrimerNombre, ' ', p.SegundoNombre) AS nombres,
+        CAST(p.IdTipoSexo AS VARCHAR) as sexo,        
+        FORMAT(p.FechaNacimiento, 'yyyy-MM-dd') as fecha_nac,CAST(a.Edad AS VARCHAR) as edad, 
+        CAST(p.IdGradoInstruccion AS VARCHAR)  as instruccion,CAST(p.IdDocIdentidad AS varchar) as tipodoc,
+        p.NroDocumento as dni, CAST (p.IdDistritoDomicilio AS varchar) as ubigeo_res,
+        p.DireccionDomicilio as direccion, 
+        p.Telefono as celular,
         FORMAT(a.FechaIngreso, 'yyyy-MM-dd') as fecha_cap,'1' as tcaso,
-        '1' as tdiabetes, ace.TriajePeso as peso,TriajeTalla as talla, 
+        '1' as tdiabetes, 
+        ace.TriajePeso as peso,
+        TriajeTalla as talla, 
         CAST( ROUND(CAST(ace.TriajePeso AS FLOAT) / POWER(CAST(ace.TriajeTalla AS FLOAT) / 100, 2),1) AS varchar) AS imc, 
         PARSENAME(REPLACE(ace.TriajePresion, '/', '.'), 2) AS sistolica, 
         PARSENAME(REPLACE(ace.TriajePresion, '/', '.'), 1) AS diastolica,
-        '102' as glicemia,'2' as evaluado,
+        '102' as glicemia,
+        '2' as evaluado, 
+        dg.CodigoCIE10,
+        dg.Descripcion,
         ed.fechaenvio,
 		ed.codigo_respuesta
         from sigh.dbo.Atenciones a 
         LEFT OUTER JOIN sigh.dbo.Servicios s ON a.IdServicioIngreso = s.IdServicio         
         LEFT OUTER JOIN sigh.dbo.Pacientes  p ON p.IdPaciente = a.IdPaciente  
         LEFT OUTER JOIN sigh.dbo.AtencionesDatosAdicionales ada on ada.idAtencion=a.IdCuentaAtencion 
-        left outer join sigh.dbo.enviosdiabetes ed on ed.cuentaid=a.IdCuentaAtencion
         left join SIGH_EXTERNA.dbo.atencionesCE ace on ace.idAtencion=a.IdAtencion 
-        where ace.TriajePeso>'1.00'
-		order by a.IdAtencion desc`, 
+        left join AtencionesDiagnosticos ad on ad.IdAtencion=a.IdAtencion
+        left outer join sigh.dbo.enviosdiabetes ed on ed.cuentaid=a.IdCuentaAtencion
+        left join diagnosticos dg on dg.IdDiagnostico=ad.IdDiagnostico
+        where dg.Descripcion like '%diabe%' and TriajeTalla>'1' `, 
         { 
             model: api_diabetes,
             mapToModel: true 
@@ -41,6 +47,48 @@ const findApiDiabetesFecha=async(req, res=response)=>{
     }
 }
 
+
+const findApiDiabetesFechaPrueba=async(req, res=response)=>{    
+    try {
+        const data = await SIGHBD.query(`select distinct p.NroHistoriaClinica as histcli,a.IdAtencion,'00000754' as eess,  p.ApellidoPaterno as apepat, 
+        p.ApellidoMaterno as apemat, CONCAT(p.PrimerNombre, ' ', p.SegundoNombre) AS nombres,
+        CAST(p.IdTipoSexo AS VARCHAR) as sexo,        
+        FORMAT(p.FechaNacimiento, 'yyyy-MM-dd') as fecha_nac,CAST(a.Edad AS VARCHAR) as edad, 
+        CAST(p.IdGradoInstruccion AS VARCHAR)  as instruccion,CAST(p.IdDocIdentidad AS varchar) as tipodoc,
+        p.NroDocumento as dni, CAST (p.IdDistritoDomicilio AS varchar) as ubigeo_res,
+        p.DireccionDomicilio as direccion, 
+        p.Telefono as celular,
+        FORMAT(a.FechaIngreso, 'yyyy-MM-dd') as fecha_cap,'1' as tcaso,
+        '1' as tdiabetes, 
+        ace.TriajePeso as peso,
+        TriajeTalla as talla, 
+        CAST( ROUND(CAST(ace.TriajePeso AS FLOAT) / POWER(CAST(ace.TriajeTalla AS FLOAT) / 100, 2),1) AS varchar) AS imc, 
+        PARSENAME(REPLACE(ace.TriajePresion, '/', '.'), 2) AS sistolica, 
+        PARSENAME(REPLACE(ace.TriajePresion, '/', '.'), 1) AS diastolica,
+        '102' as glicemia,
+        '2' as evaluado, 
+        dg.CodigoCIE10,
+        dg.Descripcion,
+        ed.fechaenvio,
+		ed.codigo_respuesta
+        from sigh.dbo.Atenciones a 
+        LEFT OUTER JOIN sigh.dbo.Servicios s ON a.IdServicioIngreso = s.IdServicio         
+        LEFT OUTER JOIN sigh.dbo.Pacientes  p ON p.IdPaciente = a.IdPaciente  
+        LEFT OUTER JOIN sigh.dbo.AtencionesDatosAdicionales ada on ada.idAtencion=a.IdCuentaAtencion 
+        left join SIGH_EXTERNA.dbo.atencionesCE ace on ace.idAtencion=a.IdAtencion 
+        left join AtencionesDiagnosticos ad on ad.IdAtencion=a.IdAtencion
+        left outer join sigh.dbo.enviosdiabetes ed on ed.cuentaid=a.IdCuentaAtencion
+        left join diagnosticos dg on dg.IdDiagnostico=ad.IdDiagnostico
+        where dg.Descripcion like '%diabe%'   order by idAtencion`, 
+        { 
+            model: api_diabetes,
+            mapToModel: true 
+        });    
+        res.status(200).json(  data  );
+    } catch (error) {
+        res.status(500).send({ success: false, message: error.message });
+    }
+}
 
 
 const findApiDiabetesById=async(req, res=response)=>{    
@@ -110,5 +158,6 @@ const CreateIngresoApi=async(req,res=response)=>{
 module.exports={
     findApiDiabetesFecha,
     findApiDiabetesById,
-    CreateIngresoApi
+    CreateIngresoApi,
+    findApiDiabetesFechaPrueba
 }

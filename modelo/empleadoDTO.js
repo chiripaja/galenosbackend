@@ -8,9 +8,19 @@ const empleadoDTO = SIGHBD.define('Empleados', {
         allowNull: false,
         primaryKey: true,
     },
-    Usuario: {
+    Nombres: {
+        type: DataTypes.STRING
+    },
+    ApellidoPaterno:{
+        type: DataTypes.STRING
+    },
+    Usuario:{
+        type: DataTypes.STRING
+    },
+    ClaveVWeb:{
         type: DataTypes.STRING
     }
+
 }, {
     tableName: 'Empleados',
     timestamps: false

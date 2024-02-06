@@ -1,14 +1,14 @@
 
 const {  DataTypes } = require('sequelize');
-const sequelize = require('../sequilize/sequilize');
+const SIGHBD = require('../sequilize/SIGH');
 
-const empleadoDTO = sequelize.define('citas', {
+const citasDTO = SIGHBD.define('Citas', {
     idcitas: {
         type: DataTypes.NUMBER,
         allowNull: false
     },
     fecha: {
-        type: DataTypes.DATE
+        type: DataTypes.STRING
     },
     horainicio:{
         type: DataTypes.STRING
@@ -49,7 +49,8 @@ const empleadoDTO = sequelize.define('citas', {
 
 
 }, {
-    tableName: 'citas'
+    tableName: 'citas',
+    timestamps: false
 });
 
-module.exports = empleadoDTO
+module.exports = citasDTO
