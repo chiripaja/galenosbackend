@@ -10,9 +10,9 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
+app.use(express.static('public'))
 
 
-//rutas
 app.use('/api/empleado',require('./router/empleado'))
 app.use('/api/servicios',require('./router/servicios'))
 app.use('/api/atencionesce',require('./router/atencionesce'))
